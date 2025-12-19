@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GENLA | Практический AI для бизнеса</title>
+    <meta name="description" content="AI-трансформация с гарантией. Инфраструктура, разработка, аутсорсинг. С 2011 года.">
+    
+    <!-- FONTS: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 1. SETTINGS & VARIABLES --- */
+        :root {
+            --brand-pink: #ff006a;
+            --brand-pink-glow: rgba(255, 0, 106, 0.4);
+            --brand-purple: #9d00ff;
+            
+            --font-main: 'Inter', sans-serif;
+            
+            --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
+            --transition: 0.5s var(--ease-out);
+        }
+
+        /* DARK THEME (Main) */
+        [data-theme="dark"] {
+            --bg-color: #050507;
+            --text-color: #ffffff;
+            --text-muted: #b0b0b0;
+            
+            --glass-bg: rgba(20, 20, 25, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-highlight: rgba(255, 255, 255, 0.15);
+            --glass-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8);
+            
+            --nav-bg: rgba(5, 5, 7, 0.9);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            
+            --particle-color-1: #ff006a;
+            --particle-color-2: #9d00ff;
+            --line-stroke: #9d00ff;
+        }
+
+        /* LIGHT THEME */
+        [data-theme="light"] {
+            --bg-color: #ffffff;
+            --text-color: #050505;
+            --text-muted: #555560;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --glass-border-highlight: rgba(255, 255, 255, 0.9);
+            --glass-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.05);
+            --nav-bg: rgba(255, 255, 255, 0.95);
+            --input-bg: #f4f4f6;
+            --particle-color-1: rgba(255, 0, 106, 0.8);
+            --particle-color-2: rgba(157, 0, 255, 0.8);
+            --line-stroke: rgba(157, 0, 255, 0.4); 
+        }
+
+        /* BASE */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        html { scroll-behavior: smooth; font-size: 16px; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+        p { letter-spacing: -0.01em; margin-bottom: 1rem;}
+        a { text-decoration: none; color: inherit; transition: var(--transition); }
+        ul { list-style: none; }
+
+        /* CONTAINER */
+        .container { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 30px; }
+
+        /* BACKGROUND */
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+
+        /* --- COMPONENTS --- */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid var(--glass-border-highlight);
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            overflow: hidden;
+        }
+        .glass:hover { border-color: rgba(255, 0, 106, 0.3); }
+
+        .btn {
+            display: inline-flex; justify-content: center; align-items: center;
+            padding: 16px 32px; border-radius: 8px;
+            font-weight: 600; font-size: 1rem; 
+            transition: 0.3s; cursor: pointer; border: none; outline: none;
+        }
+        .btn-primary {
+            background: var(--brand-pink); color: #fff;
+            box-shadow: 0 4px 20px rgba(255, 0, 106, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 0, 106, 0.5); }
+        .btn-secondary {
+            border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text-color);
+        }
+        .btn-secondary:hover { border-color: var(--brand-pink); color: var(--brand-pink); }
+
+        /* --- HEADER & LOGO --- */
+        .header {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+            padding: 20px 0; background: var(--nav-bg); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border); transition: 0.3s;
+        }
+        .header.scrolled { padding: 12px 0; }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+
+        .logo-link { 
+            display: block; 
+            width: 140px; 
+            height: auto; 
+            line-height: 0;
+        }
+        .logo-svg {
+            width: 100%; 
+            height: 100%;
+            /* ВСЕГДА МАЛИНОВЫЙ ЦВЕТ */
+            fill: var(--brand-pink); 
+            transition: fill 0.3s ease;
+        }
+        
+        .nav { display: flex; gap: 32px; }
+        .nav-link { font-size: 0.95rem; font-weight: 500; opacity: 0.8; }
+        .nav-link:hover { opacity: 1; color: var(--brand-pink); }
+
+        .header-controls { display: flex; gap: 16px; align-items: center; }
+        .burger-btn { display: none; flex-direction: column; gap: 6px; background: none; border: none; z-index: 200; padding: 5px; cursor: pointer; }
+        .burger-btn span { width: 24px; height: 2px; background: var(--text-color); transition: 0.3s; }
+        .burger-btn.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 6px); }
+        .burger-btn.active span:nth-child(2) { opacity: 0; }
+        .burger-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -6px); }
+        
+        #theme-btn {
+            background: none; border: 1px solid var(--glass-border); border-radius: 50%;
+            width: 40px; height: 40px; color: var(--text-color);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+
+        /* --- PRELOADER --- */
+        #preloader {
+            position: fixed; inset: 0; background: var(--bg-color); z-index: 10000;
+            display: flex; justify-content: center; align-items: center; flex-direction: column; transition: 0.6s;
+        }
+        .preloader-logo {
+            width: 180px; 
+            margin-bottom: 30px;
+        }
+        .preloader-logo svg {
+            width: 100%; height: auto;
+            fill: var(--brand-pink);
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 3px solid rgba(255, 0, 106, 0.1);
+            border-top-color: var(--brand-pink); border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- HERO --- */
+        .hero { min-height: 90vh; display: flex; align-items: center; padding-top: 80px; }
+        .hero h1 { font-size: 4rem; line-height: 1.1; margin-bottom: 24px; }
+        .hero-lead { font-size: 1.25rem; color: var(--text-muted); max-width: 700px; margin-bottom: 40px; }
+        .hero-tags { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .tag { 
+            padding: 8px 16px; background: rgba(255, 0, 106, 0.08); border: 1px solid rgba(255, 0, 106, 0.2);
+            border-radius: 100px; font-size: 0.9rem; font-weight: 600; color: var(--brand-pink);
+        }
+
+        /* --- SECTIONS --- */
+        .section { padding: 100px 0; }
+        .section-header { margin-bottom: 60px; max-width: 950px; }
+        .section-title { font-size: 2.8rem; margin-bottom: 24px; }
+        .section-desc { font-size: 1.1rem; color: var(--text-muted); line-height: 1.7; }
+        .section-desc-bold { font-weight: 600; color: var(--text-color); margin-top: 20px;}
+
+        /* NICHES */
+        .niches-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .niche-card { padding: 40px; display: flex; flex-direction: column; height: 100%; position: relative; }
+        .niche-num { font-size: 4rem; font-weight: 800; color: var(--brand-pink); opacity: 0.1; position: absolute; top: 20px; right: 20px; }
+        .niche-title { font-size: 1.5rem; margin-bottom: 16px; margin-top: 10px; }
+        .niche-desc { color: var(--text-muted); margin-bottom: 24px; flex-grow: 1; font-size: 1rem; }
+        .niche-link { color: var(--brand-pink); font-weight: 600; display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+
+        /* PROCESS */
+        .process-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .process-step { position: relative; padding-top: 20px; }
+        .process-step::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, var(--brand-pink), transparent);
+        }
+        .step-num { font-size: 0.9rem; color: var(--brand-pink); font-weight: 700; display: block; margin-bottom: 8px; }
+        .step-title { font-size: 1.1rem; margin-bottom: 8px; font-weight: 600; }
+        .step-text { font-size: 0.9rem; color: var(--text-muted); }
+
+        /* WHY US */
+        .benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .benefit-card {
+            padding: 30px; position: relative;
+            background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            transition: transform 0.3s;
+        }
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            background: linear-gradient(145deg, rgba(255, 0, 106, 0.05) 0%, rgba(255,255,255,0.01) 100%);
+        }
+        .benefit-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .benefit-icon { 
+            width: 48px; height: 48px; background: rgba(255, 0, 106, 0.1); color: var(--brand-pink);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.4rem;
+        }
+        .benefit-num { position: absolute; top: 20px; right: 20px; font-size: 0.8rem; color: var(--text-muted); opacity: 0.3; font-weight: 700; }
+        .benefit-title { font-size: 1.2rem; font-weight: 700; line-height: 1.3; }
+        .benefit-text { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
+
+        /* TEAM */
+        .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .team-card { padding: 30px; text-align: center; }
+        .team-avatar {
+            width: 100px; height: 100px; margin: 0 auto 20px; border-radius: 50%;
+            background: linear-gradient(135deg, #333, #666); border: 2px solid var(--brand-pink);
+        }
+        .team-name { font-size: 1.25rem; font-weight: 700; margin-bottom: 5px; }
+        .team-role { color: var(--brand-pink); font-size: 0.9rem; font-weight: 500; }
+
+        /* CONTACTS */
+        .contact-block { display: grid; grid-template-columns: 1fr 1.2fr; border-radius: 24px; overflow: hidden; }
+        .contact-left { padding: 60px; display: flex; flex-direction: column; justify-content: center;}
+        .contact-right { 
+            padding: 60px; background: linear-gradient(135deg, rgba(255,0,106,0.03), rgba(157,0,255,0.03)); 
+            border-left: 1px solid var(--glass-border);
+        }
+        .contact-item { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; font-size: 1.1rem; }
+        .form-row { margin-bottom: 20px; }
+        .form-input {
+            width: 100%; padding: 16px; background: var(--input-bg);
+            border: 1px solid var(--glass-border); border-radius: 8px;
+            font-family: inherit; color: var(--text-color); font-size: 1rem;
+        }
+        .form-input:focus { border-color: var(--brand-pink); outline: none; }
+
+        /* FOOTER */
+        footer { padding: 40px 0; border-top: 1px solid var(--glass-border); color: var(--text-muted); font-size: 0.9rem; margin-top: 60px;}
+
+        /* ANIMATIONS */
+        .reveal { opacity: 0; transform: translateY(30px); transition: 0.8s ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+
+        /* MOBILE ADAPTIVE */
+        @media (max-width: 1024px) {
+            .hero h1 { font-size: 3.5rem; }
+            .niches-grid, .team-grid, .benefits-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .burger-btn { display: flex; }
+            
+            /* --- MOBILE MENU CENTERED --- */
+            .nav { 
+                position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+                background: var(--bg-color); 
+                /* Centering */
+                display: flex;
+                flex-direction: column; 
+                justify-content: center; 
+                align-items: center;
+                text-align: center;
+                gap: 40px; 
+                
+                z-index: 150;
+                transform: translateX(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .nav.active { transform: translateX(0); }
+            
+            /* Larger links for mobile */
+            .nav-link { font-size: 1.5rem; display: block; width: 100%; }
+
+            .header-controls .btn-primary { display: none; }
+            
+            .hero h1 { font-size: 2.5rem; }
+            .section-title { font-size: 2rem; }
+            .container { padding: 0 20px; }
+            
+            .niches-grid, .process-grid, .benefits-grid, .contact-block, .team-grid { grid-template-columns: 1fr; }
+            .contact-right { border-left: none; border-top: 1px solid var(--glass-border); padding: 40px 24px; }
+            .contact-left { padding: 40px 24px; }
+            
+            .process-step { padding-top: 15px; border-left: 2px solid var(--brand-pink); padding-left: 20px; }
+            .process-step::before { display: none; }
+        }
+    </style>
+</head>
+<body data-theme="light"> <!-- DEFAULT LIGHT -->
+
+    <!-- PRELOADER WITH INLINE SVG LOGO -->
+    <div id="preloader">
+        <div class="preloader-logo">
+            <!-- INLINE SVG CODE -->
+            <svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" preserveAspectRatio="xMidYMid meet">
+                <g transform="translate(0,640) scale(0.1,-0.1)" stroke="none">
+                    <path d="M4250 3722 c0 -653 -2 -634 76 -721 58 -64 125 -91 229 -91 l75 0 0 104 0 104 -47 7 c-27 3 -59 13 -71 22 -51 32 -52 42 -52 618 l0 535 -105 0 -105 0 0 -578z"/>
+                    <path d="M732 3851 c-64 -22 -132 -85 -165 -151 -21 -43 -22 -57 -22 -290 l0 -245 29 -62 c33 -71 103 -144 169 -173 37 -17 67 -20 270 -20 l227 0 0 109 0 110 -204 3 c-190 3 -207 5 -233 24 l-28 21 0 213 0 213 28 21 c27 20 40 21 258 21 l229 0 27 -28 28 -27 3 -397 c2 -287 -1 -405 -9 -426 -21 -51 -48 -57 -264 -57 l-195 0 0 -111 0 -110 238 3 c221 3 240 4 277 25 59 31 119 100 146 169 l24 59 0 441 0 441 -35 69 c-25 49 -49 79 -85 106 -82 63 -115 68 -404 68 -222 -1 -263 -3 -309 -19z"/>
+                    <path d="M1936 3850 c-63 -25 -129 -89 -156 -152 -20 -47 -21 -63 -18 -311 l3 -262 27 -52 c32 -60 84 -114 136 -140 32 -16 68 -18 280 -21 l242 -3 0 111 0 110 -195 0 c-208 0 -252 8 -274 48 -18 33 -14 386 4 421 23 45 58 51 280 51 209 0 257 -7 275 -40 17 -33 12 -115 -9 -141 -19 -24 -21 -24 -250 -27 l-231 -3 0 -105 0 -106 243 4 c277 4 295 8 381 96 60 61 86 129 86 226 0 61 -5 83 -30 134 -35 69 -92 125 -159 156 -43 20 -64 21 -316 23 -248 2 -274 1 -319 -17z"/>
+                    <path d="M2965 3861 c-11 -5 -29 -19 -40 -31 -19 -21 -20 -38 -23 -471 l-3 -449 111 0 110 0 0 365 0 365 243 0 c268 0 303 -6 369 -60 20 -17 47 -51 60 -77 22 -46 23 -58 26 -320 l4 -273 124 0 124 0 0 258 c0 276 -8 359 -41 446 -26 72 -104 157 -172 190 -114 55 -144 59 -522 62 -192 2 -359 0 -370 -5z"/>
+                    <path d="M4990 3756 l0 -116 240 0 240 0 32 -29 33 -29 3 -179 c4 -211 -3 -248 -53 -269 -46 -19 -457 -20 -495 -1 -49 25 -61 85 -26 132 13 19 29 20 228 25 l213 5 3 108 3 109 -228 -4 c-214 -3 -231 -5 -281 -27 -67 -30 -135 -105 -158 -173 -12 -36 -15 -71 -12 -122 8 -119 65 -202 178 -258 44 -22 54 -23 330 -23 l285 0 57 28 c69 34 121 91 149 166 19 51 20 72 17 316 l-3 262 -26 39 c-41 61 -79 95 -139 123 -54 26 -58 26 -322 29 l-268 3 0 -115z"/>
+                </g>
+            </svg>
+        </div>
+        <div class="spinner"></div>
+    </div>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container header-inner">
+            <a href="/" class="logo-link">
+                <!-- INLINE SVG LOGO -->
+                <svg class="logo-svg" version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" preserveAspectRatio="xMidYMid meet">
+                    <g transform="translate(0,640) scale(0.1,-0.1)" stroke="none">
+                        <path d="M4250 3722 c0 -653 -2 -634 76 -721 58 -64 125 -91 229 -91 l75 0 0 104 0 104 -47 7 c-27 3 -59 13 -71 22 -51 32 -52 42 -52 618 l0 535 -105 0 -105 0 0 -578z"/>
+                        <path d="M732 3851 c-64 -22 -132 -85 -165 -151 -21 -43 -22 -57 -22 -290 l0 -245 29 -62 c33 -71 103 -144 169 -173 37 -17 67 -20 270 -20 l227 0 0 109 0 110 -204 3 c-190 3 -207 5 -233 24 l-28 21 0 213 0 213 28 21 c27 20 40 21 258 21 l229 0 27 -28 28 -27 3 -397 c2 -287 -1 -405 -9 -426 -21 -51 -48 -57 -264 -57 l-195 0 0 -111 0 -110 238 3 c221 3 240 4 277 25 59 31 119 100 146 169 l24 59 0 441 0 441 -35 69 c-25 49 -49 79 -85 106 -82 63 -115 68 -404 68 -222 -1 -263 -3 -309 -19z"/>
+                        <path d="M1936 3850 c-63 -25 -129 -89 -156 -152 -20 -47 -21 -63 -18 -311 l3 -262 27 -52 c32 -60 84 -114 136 -140 32 -16 68 -18 280 -21 l242 -3 0 111 0 110 -195 0 c-208 0 -252 8 -274 48 -18 33 -14 386 4 421 23 45 58 51 280 51 209 0 257 -7 275 -40 17 -33 12 -115 -9 -141 -19 -24 -21 -24 -250 -27 l-231 -3 0 -105 0 -106 243 4 c277 4 295 8 381 96 60 61 86 129 86 226 0 61 -5 83 -30 134 -35 69 -92 125 -159 156 -43 20 -64 21 -316 23 -248 2 -274 1 -319 -17z"/>
+                        <path d="M2965 3861 c-11 -5 -29 -19 -40 -31 -19 -21 -20 -38 -23 -471 l-3 -449 111 0 110 0 0 365 0 365 243 0 c268 0 303 -6 369 -60 20 -17 47 -51 60 -77 22 -46 23 -58 26 -320 l4 -273 124 0 124 0 0 258 c0 276 -8 359 -41 446 -26 72 -104 157 -172 190 -114 55 -144 59 -522 62 -192 2 -359 0 -370 -5z"/>
+                        <path d="M4990 3756 l0 -116 240 0 240 0 32 -29 33 -29 3 -179 c4 -211 -3 -248 -53 -269 -46 -19 -457 -20 -495 -1 -49 25 -61 85 -26 132 13 19 29 20 228 25 l213 5 3 108 3 109 -228 -4 c-214 -3 -231 -5 -281 -27 -67 -30 -135 -105 -158 -173 -12 -36 -15 -71 -12 -122 8 -119 65 -202 178 -258 44 -22 54 -23 330 -23 l285 0 57 28 c69 34 121 91 149 166 19 51 20 72 17 316 l-3 262 -26 39 c-41 61 -79 95 -139 123 -54 26 -58 26 -322 29 l-268 3 0 -115z"/>
+                    </g>
+                </svg>
+            </a>
+
+            <nav class="nav" id="mobile-nav">
+                <a href="#about" class="nav-link">О нас</a>
+                <a href="#niches" class="nav-link">Услуги</a>
+                <a href="#process" class="nav-link">Как работаем</a>
+                <a href="#team" class="nav-link">Команда</a>
+                <a href="#contacts" class="nav-link">Контакты</a>
+            </nav>
+
+            <div class="header-controls">
+                <button id="theme-btn" aria-label="Theme">
+                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                </button>
+                <button class="btn btn-primary" onclick="document.getElementById('contacts').scrollIntoView()">Обсудить</button>
+                <button class="burger-btn" id="burger-toggle"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-tags reveal">
+                <span class="tag">Infrastructure</span>
+                <span class="tag">Development</span>
+                <span class="tag">Outsourcing</span>
+            </div>
+            <h1 class="reveal delay-1">
+                AI-трансформация<br>
+                с гарантией и<br>
+                безопасностью
+            </h1>
+            <p class="hero-lead reveal delay-2">
+                Мы — практики, а не теоретики. Продаём не «магию AI», а конкретный результат. 
+                Строим независимую инфраструктуру, разрабатываем софт и берем на себя цифровые задачи.
+            </p>
+            <div class="reveal delay-3">
+                <button class="btn btn-primary" onclick="document.getElementById('contacts').scrollIntoView()">Обсудить проект</button>
+                <a href="#niches" class="btn btn-secondary" style="margin-left: 15px;">Наши ниши</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT / IDEOLOGY -->
+    <section class="section" id="about">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2 class="section-title">Генла – всех обогнала</h2>
+                <p class="section-desc">
+                    <strong>С 2011 года. Мы превращаем сложные технологии в простой результат для бизнеса.</strong><br><br>
+                    AI трансформация неизбежна... Наша миссия — обеспечивать технологическое превосходство и конкурентоспособность бизнеса, некоммерческих организаций и государства. Мы ценим каждого клиента, и для каждого клиента, у нас есть видение и реальная экономическая эффективность проекта, а не просто услуги.
+                </p>
+                <p class="section-desc section-desc-bold">
+                    Мы работаем с гарантией измеримого результата и с полным соблюдением конфиденциальности и безопасности как вашей коммерческой тайны, так и персональных данных ваших клиентов и партнёров, от начала и до конца нашего стратегического сотрудничества.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- NICHES (CORE) -->
+    <section class="section" id="niches">
+        <div class="container">
+            <h2 class="section-title reveal">Наши ниши</h2>
+            <div class="niches-grid">
+                <!-- 1. Infrastructure -->
+                <div class="glass niche-card reveal">
+                    <span class="niche-num">01</span>
+                    <h3 class="niche-title">ИИ инфраструктура под ключ</h3>
+                    <p class="niche-desc">
+                        Мы продаём и настраиваем серверное оборудование <i>у клиента в офисе</i> и разворачиваем на нём защищённую AI-инфраструктуру. Это для тех, кто не хочет зависеть от иностранных облаков (Big Tech) или кому закон этого не позволяет (банки, госсектор, мед.учреждения).
+                    </p>
+                    <div class="niche-link">Ваши данные никуда не уходят. Полная независимость.</div>
+                </div>
+                <!-- 2. Development -->
+                <div class="glass niche-card reveal delay-1">
+                    <span class="niche-num">02</span>
+                    <h3 class="niche-title">Разработка и интеграция</h3>
+                    <p class="niche-desc">
+                        Мы делаем AI-приложения, веб-сервисы и автоматизируем процессы (документооборот, поддержка клиентов), используя как свои наработки, так и лучшие готовые решения на рынке. Для бизнеса, которому нужен надёжный и проверенный исполнитель.
+                    </p>
+                    <div class="niche-link">Автоматизация с гарантией. Мы — ваш tech-партнёр.</div>
+                </div>
+                <!-- 3. Outsourcing -->
+                <div class="glass niche-card reveal delay-2">
+                    <span class="niche-num">03</span>
+                    <h3 class="niche-title">AI-аутсорсинг</h3>
+                    <p class="niche-desc">
+                        Мы выступаем как ваш внешний цифровой отдел. Делаем за вас то, что сейчас все делают с помощью AI: пишем тексты, создаём видео, обучаем сотрудников и помогаем с подбором персонала.
+                    </p>
+                    <div class="niche-link">Результат AI уже завтра, без найма своих специалистов.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section class="section" id="process">
+        <div class="container">
+            <h2 class="section-title reveal">Как мы работаем</h2>
+            <div class="process-grid">
+                <div class="process-step reveal">
+                    <span class="step-num">01</span>
+                    <h4 class="step-title">Аудит</h4>
+                    <p class="step-text">Обсуждаем задачу и считаем экономический эффект.</p>
+                </div>
+                <div class="process-step reveal delay-1">
+                    <span class="step-num">02</span>
+                    <h4 class="step-title">Решение</h4>
+                    <p class="step-text">Разрабатываем систему или подбираем оборудование.</p>
+                </div>
+                <div class="process-step reveal delay-2">
+                    <span class="step-num">03</span>
+                    <h4 class="step-title">Внедрение</h4>
+                    <p class="step-text">Запускаем систему и обучаем сотрудников.</p>
+                </div>
+                <div class="process-step reveal delay-3">
+                    <span class="step-num">04</span>
+                    <h4 class="step-title">Поддержка</h4>
+                    <p class="step-text">Обеспечиваем стабильность и развитие.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHY US (ENHANCED) -->
+    <section class="section" id="why">
+        <div class="container">
+            <h2 class="section-title reveal">Почему мы</h2>
+            <div class="benefits-grid">
+                <!-- Card 1 -->
+                <div class="glass benefit-card reveal">
+                    <span class="benefit-num">01</span>
+                    <div class="benefit-header">
+                        <div class="benefit-icon">📈</div>
+                        <h4 class="benefit-title">Фокус на ROI</h4>
+                    </div>
+                    <p class="benefit-text">
+                        Не внедряем AI ради хайпа. Рассчитываем окупаемость до старта. Если технология не экономит или не приносит деньги — мы честно об этом скажем.
+                    </p>
+                </div>
+                <!-- Card 2 -->
+                <div class="glass benefit-card reveal delay-1">
+                    <span class="benefit-num">02</span>
+                    <div class="benefit-header">
+                        <div class="benefit-icon">🛡</div>
+                        <h4 class="benefit-title">Безопасность</h4>
+                    </div>
+                    <p class="benefit-text">
+                        Работаем в закрытых контурах (On-premise). Ваши данные не покидают периметр компании. Полное соблюдение коммерческой тайны.
+                    </p>
+                </div>
+                <!-- Card 3 -->
+                <div class="glass benefit-card reveal delay-2">
+                    <span class="benefit-num">03</span>
+                    <div class="benefit-header">
+                        <div class="benefit-icon">🤝</div>
+                        <h4 class="benefit-title">Опыт с 2011 года</h4>
+                    </div>
+                    <p class="benefit-text">
+                        Прошли путь от веб-интегратора до AI-лаборатории. Мы знаем, как внедрять инновации в устоявшиеся бизнес-процессы без сбоев.
+                    </p>
+                </div>
+                <!-- Card 4 -->
+                <div class="glass benefit-card reveal">
+                    <span class="benefit-num">04</span>
+                    <div class="benefit-header">
+                        <div class="benefit-icon">⚙️</div>
+                        <h4 class="benefit-title">Интеграция с Legacy</h4>
+                    </div>
+                    <p class="benefit-text">
+                        Умеем «дружить» современные нейросети со старым корпоративным софтом и оборудованием. Бесшовная трансформация.
+                    </p>
+                </div>
+                <!-- Card 5 -->
+                <div class="glass benefit-card reveal delay-1">
+                    <span class="benefit-num">05</span>
+                    <div class="benefit-header">
+                        <div class="benefit-icon">📊</div>
+                        <h4 class="benefit-title">Понятные отчеты</h4>
+                    </div>
+                    <p class="benefit-text">
+                        Говорим на языке бизнеса, а не сложного кода. Вы всегда понимаете, за что платите и какой результат получаете на каждом этапе.
+                    </p>
+                </div>
+                <!-- Card 6 -->
+                <div class="glass benefit-card reveal delay-2">
+                    <span class="benefit-num">06</span>
+                    <div class="benefit-header">
+                        <div class="benefit-icon">🛠</div>
+                        <h4 class="benefit-title">Поддержка 24/7</h4>
+                    </div>
+                    <p class="benefit-text">
+                        Не бросаем проект после релиза. Обеспечиваем SLA, мониторинг и развитие системы вместе с ростом вашего бизнеса.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TEAM -->
+    <section class="section" id="team">
+        <div class="container">
+            <h2 class="section-title reveal">Команда</h2>
+            <div class="team-grid">
+                <div class="glass team-card reveal">
+                    <div class="team-avatar"></div>
+                    <div class="team-name">Сергей Бровкин</div>
+                    <div class="team-role">Эксперт / Руководитель</div>
+                </div>
+                <div class="glass team-card reveal delay-1">
+                    <div class="team-avatar"></div>
+                    <div class="team-name">Тимохин Кирилл</div>
+                    <div class="team-role">Технический директор</div>
+                </div>
+                <div class="glass team-card reveal delay-2">
+                    <div class="team-avatar"></div>
+                    <div class="team-name">Сёмин Эдвард</div>
+                    <div class="team-role">Ведущий разработчик</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTS -->
+    <section class="section" id="contacts">
+        <div class="container">
+            <div class="glass contact-block reveal">
+                <!-- Contacts Info -->
+                <div class="contact-left">
+                    <h3 style="margin-bottom: 20px;">Просто напишите нам</h3>
+                    <p style="margin-bottom: 30px; color:var(--text-muted);">
+                        Вместе мы обязательно найдем оптимальное решение для оптимизации вашего бизнеса, и достижения всех ваших целей с помощью технологии искусственного интеллекта. Мы гарантируем вам максимальную скорость и высокое качество.
+                    </p>
+                    <div class="contact-item">
+                        <span>📞</span> +7 (999) 000-00-00
+                    </div>
+                    <div class="contact-item">
+                        <span>✉️</span> hello@genla.ai
+                    </div>
+                    <div class="contact-item">
+                        <span>📍</span> Москва, Пресненская наб., 12
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <div class="contact-right">
+                    <form onsubmit="event.preventDefault(); alert('Заявка отправлена!');">
+                        <div class="form-row">
+                            <input type="text" class="form-input" placeholder="Ваше имя" required>
+                        </div>
+                        <div class="form-row">
+                            <input type="text" class="form-input" placeholder="Телефон" required>
+                        </div>
+                        <div class="form-row">
+                            <input type="text" class="form-input" placeholder="Промокод (на скидку 10%)">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Оставить заявку</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px;">
+            <div>© 2025 GENLA. Все права защищены.</div>
+            <div>Генла – всех обогнала.</div>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // PRELOADER
+            setTimeout(() => {
+                document.getElementById('preloader').style.opacity = '0';
+                setTimeout(() => document.getElementById('preloader').style.display = 'none', 600);
+            }, 800);
+
+            // MENU & THEME
+            const burger = document.getElementById('burger-toggle');
+            const nav = document.getElementById('mobile-nav');
+            burger.addEventListener('click', () => {
+                nav.classList.toggle('active');
+                burger.classList.toggle('active');
+            });
+            
+            // Close menu on link click
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    nav.classList.remove('active');
+                    burger.classList.remove('active');
+                });
+            });
+            
+            const themeBtn = document.getElementById('theme-btn');
+            // SET LIGHT THEME BY DEFAULT
+            let savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+
+            themeBtn.addEventListener('click', () => {
+                const currentTheme = document.body.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+
+            // HEADER SCROLL
+            const header = document.querySelector('.header');
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('scrolled', window.scrollY > 50);
+            });
+
+            // SCROLL REVEAL
+            const reveals = document.querySelectorAll('.reveal');
+            function checkScroll() {
+                const trigger = window.innerHeight * 0.9;
+                reveals.forEach(el => {
+                    if (el.getBoundingClientRect().top < trigger) el.classList.add('active');
+                });
+            }
+            window.addEventListener('scroll', checkScroll);
+            checkScroll();
+
+            // CANVAS: THE WAVE (Ref 4)
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let w, h;
+            let particles = [];
+            let time = 0;
+
+            function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+
+            // Wave Particle Class
+            class WaveParticle {
+                constructor(x) {
+                    this.x = x;
+                    this.y = h / 2;
+                    this.baseY = h / 2;
+                    this.yOffset = (Math.random() - 0.5) * (h * 0.5); 
+                    this.speed = Math.random() * 0.002 + 0.001;
+                    this.amplitude = Math.random() * 100 + 50;
+                    this.size = Math.random() * 2.5 + 0.5; 
+                    this.isPink = Math.random() > 0.5;
+                }
+                update() {
+                    const wave = Math.sin(this.x * 0.002 + time) * this.amplitude;
+                    const wave2 = Math.cos(this.x * 0.005 - time) * (this.amplitude * 0.5);
+                    this.y = this.baseY + this.yOffset + wave + wave2;
+                    this.x += Math.sin(time) * 0.5;
+                }
+                draw() {
+                    const style = getComputedStyle(document.body);
+                    const p1 = style.getPropertyValue('--particle-color-1').trim();
+                    const p2 = style.getPropertyValue('--particle-color-2').trim();
+                    ctx.fillStyle = this.isPink ? p1 : p2;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.globalAlpha = this.size > 2 ? 0.8 : 0.3; 
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                const count = window.innerWidth < 768 ? 100 : 250; 
+                for(let i = 0; i < count; i++) {
+                    particles.push(new WaveParticle(Math.random() * w));
+                }
+            }
+
+            function animateCanvas() {
+                ctx.clearRect(0, 0, w, h);
+                time += 0.005;
+                const style = getComputedStyle(document.body);
+                const strokeColor = style.getPropertyValue('--line-stroke').trim();
+
+                for(let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    for(let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if(dist < 110) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = strokeColor;
+                            ctx.lineWidth = 1.5 * (1 - dist/110); 
+                            ctx.globalAlpha = 0.5 * (1 - dist/110);
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                            ctx.globalAlpha = 1;
+                        }
+                    }
+                }
+                requestAnimationFrame(animateCanvas);
+            }
+
+            window.addEventListener('resize', () => { resize(); initParticles(); });
+            resize();
+            initParticles();
+            animateCanvas();
+        });
+    </script>
+</body>
+</html>
